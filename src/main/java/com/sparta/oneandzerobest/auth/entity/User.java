@@ -107,7 +107,7 @@ public class User implements UserDetails { // Spring Security의 UserDetails
 
     public void updateKakaoUser(long kakaoId, String username, String nickname, String email, UserStatus statusCode) {
         this.id = kakaoId;
-        this.username = nickname;
+        this.username = username;
         this.password = "kakao";
         this.email = email;
         this.name = nickname;

@@ -2,19 +2,19 @@ spring:
   application:
     name: OneAndZeroBest
   datasource:
-    url: jdbc:mysql://localhost:3306/shmechu
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    username: ${DATABASE_USERNAME}
-    password: ${DATABASE_PASSWORD}
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     show-sql: true
   mail:
     host: smtp.gmail.com
     port: 587
-    username: ${EMAIL_USERNAME}
-    password: ${EMAIL_PASSWORD}
+    username: test@example.com
+    password: testpassword
     properties:
       mail:
         smtp:
@@ -32,22 +32,22 @@ spring:
       client:
         registration:
           kakao:
-            client-id: ${KAKAO_CLIENT_ID}
-            client-secret: ${KAKAO_CLIENT_SECRET}
+            client-id: test-kakao-client-id
+            client-secret: test-kakao-client-secret
             client-authentication-method: post
             authorization-grant-type: authorization_code
             redirect-uri: "http://localhost:8080/api/auth/social/kakao"
             scope: profile_nickname, profile_image
           google:
-            client-id: ${GOOGLE_CLIENT_ID}
-            client-secret: ${GOOGLE_CLIENT_SECRET}
+            client-id: test-google-client-id
+            client-secret: test-google-client-secret
             client-authentication-method: post
             authorization-grant-type: authorization_code
             redirect-uri: "http://localhost:8080/api/auth/social/google"
             scope: profile, email
           github:
-            client-id: ${GITHUB_CLIENT_ID}
-            client-secret: ${GITHUB_CLIENT_SECRET}
+            client-id: test-github-client-id
+            client-secret: test-github-client-secret
             client-authentication-method: post
             authorization-grant-type: authorization_code
             redirect-uri: "http://localhost:8080/api/auth/social/github"
@@ -78,7 +78,7 @@ app:
 
 jwt:
   secret:
-    key: ${JWT_SECRET_KEY}
+    key: test-jwt-secret-key
   token:
     expiration: 1800000
   refresh:
@@ -88,10 +88,10 @@ jwt:
 cloud:
   aws:
     s3:
-      bucketName: ${BUCKET_NAME}
+      bucketName: test-bucket-name
     credentials:
-      accessKey: ${AWS_ACCESS_KEY}
-      secretKey: ${AWS_SECRET_KEY}
+      accessKey: test-aws-access-key
+      secretKey: test-aws-secret-key
     region:
       static: ap-southeast-2
       auto: true

@@ -132,6 +132,7 @@ public class UserServiceImpl implements UserService {
         if (UserStatus.UNVERIFIED.equals(user.getStatusCode())) {
             throw new InfoNotCorrectedException("이메일 인증이 필요합니다.");
         }
+
         String accessToken = jwtUtil.createAccessToken(user.getUsername());
         String refreshToken = jwtUtil.createRefreshToken(user.getUsername());
 

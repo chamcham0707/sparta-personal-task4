@@ -14,6 +14,7 @@ import java.util.Collections;
 @Entity
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "users")
 public class User implements UserDetails { // Spring Security의 UserDetails
     @Id

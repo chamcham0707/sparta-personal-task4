@@ -25,8 +25,12 @@ public class CommentResponseDto {
         this.newsfeedId = comment.getNewsfeedId();
         this.userId = comment.getUserId();
         this.content = comment.getContent();
-        this.createdAt = formatDateTime(comment.getCreatedAt());
-        this.modifiedAt = formatDateTime(comment.getModifiedAt());
+        if (comment.getCreatedAt() != null) {
+            this.createdAt = formatDateTime(comment.getCreatedAt());
+        }
+        if (comment.getModifiedAt() != null) {
+            this.modifiedAt = formatDateTime(comment.getModifiedAt());
+        }
     }
 
     // 날짜 형식을 보기 좋게 포매팅하는 메서드

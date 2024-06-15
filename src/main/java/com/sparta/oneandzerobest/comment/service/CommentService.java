@@ -8,6 +8,7 @@ import com.sparta.oneandzerobest.comment.dto.CommentResponseDto;
 import com.sparta.oneandzerobest.comment.entity.Comment;
 import com.sparta.oneandzerobest.comment.repository.CommentRepository;
 import com.sparta.oneandzerobest.exception.CommentNotFoundException;
+import com.sparta.oneandzerobest.exception.NotFoundUserException;
 import com.sparta.oneandzerobest.exception.UnauthorizedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,9 +41,12 @@ public class CommentService {
      * @return 생성된 댓글의 응답 DTO
      */
     @Transactional
-    public CommentResponseDto addComment(Long newsfeedId, CommentRequestDto requestDto, String token) {
-        Long userId = validateToken(token);
-        Comment comment = new Comment(newsfeedId, userId, requestDto.getContent());
+    public CommentResponseDto addComment(Long newsfeedId, CommentRequestDto requestDto, String username) {
+        User user = userRepository.findByUsername(username).orElseThrow(
+                () -> new NotFoundUserException()
+        );
+
+        Comment comment = new Comment(newsfeedId, user.getId(), requestDto.getContent());
         comment = commentRepository.save(comment);
         return new CommentResponseDto(comment);
     }
@@ -54,8 +58,7 @@ public class CommentService {
      * @return 댓글 응답 DTO 리스트
      */
     @Transactional(readOnly = true)
-    public List<CommentResponseDto> getAllComments(Long newsfeedId, String token) {
-        validateToken(token);
+    public List<CommentResponseDto> getAllComments(Long newsfeedId) {
         List<Comment> comments = commentRepository.findByNewsfeedId(newsfeedId);
         return comments.stream()
                 .map(CommentResponseDto::new)
@@ -71,9 +74,11 @@ public class CommentService {
      * @return 수정된 댓글의 응답 DTO
      */
     @Transactional
-    public CommentResponseDto updateComment(Long newsfeedId, Long commentId, CommentRequestDto requestDto, String token) {
-        Long userId = validateToken(token);
-        Comment comment = commentRepository.findByIdAndNewsfeedIdAndUserId(commentId, newsfeedId, userId)
+    public CommentResponseDto updateComment(Long newsfeedId, Long commentId, CommentRequestDto requestDto, String username) {
+        User user = userRepository.findByUsername(username).orElseThrow(
+                () -> new NotFoundUserException()
+        );
+        Comment comment = commentRepository.findByIdAndNewsfeedIdAndUserId(commentId, newsfeedId, user.getId())
                 .orElseThrow(() -> new CommentNotFoundException("해당 댓글이 존재하지 않거나 권한이 없습니다."));
         comment.setContent(requestDto.getContent());
         comment.setModifiedAt(LocalDateTime.now());
@@ -88,9 +93,10 @@ public class CommentService {
      * @param token JWT 토큰
      */
     @Transactional
-    public void deleteComment(Long newsfeedId, Long commentId, String token) {
-        Long userId = validateToken(token);
-        Comment comment = commentRepository.findByIdAndNewsfeedIdAndUserId(commentId, newsfeedId, userId)
+    public void deleteComment(Long newsfeedId, Long commentId, String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UnauthorizedException("인증 정보가 유효하지 않습니다."));
+        Comment comment = commentRepository.findByIdAndNewsfeedIdAndUserId(commentId, newsfeedId, user.getId())
                 .orElseThrow(() -> new CommentNotFoundException("해당 댓글이 존재하지 않거나 권한이 없습니다."));
         commentRepository.delete(comment);
     }

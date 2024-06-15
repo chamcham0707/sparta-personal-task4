@@ -3,6 +3,7 @@ package com.sparta.oneandzerobest.newsfeed.service;
 import com.sparta.oneandzerobest.auth.entity.User;
 import com.sparta.oneandzerobest.auth.repository.UserRepository;
 import com.sparta.oneandzerobest.auth.util.JwtUtil;
+import com.sparta.oneandzerobest.exception.NotFoundUserException;
 import com.sparta.oneandzerobest.newsfeed.dto.NewsfeedRequestDto;
 import com.sparta.oneandzerobest.newsfeed.dto.NewsfeedResponseDto;
 import com.sparta.oneandzerobest.newsfeed.entity.Newsfeed;
@@ -34,15 +35,13 @@ public class NewsfeedService {
      * @param contentRequestDto
      * @return
      */
-    public ResponseEntity<NewsfeedResponseDto> postContent(String token,
+    public ResponseEntity<NewsfeedResponseDto> postContent(String username,
         NewsfeedRequestDto contentRequestDto) {
+        User user = userRepository.findByUsername(username).orElseThrow(
+                () ->new NotFoundUserException()
+        );
 
         try {
-            // 토큰으로 유저 정보 가져오기
-            User user = getUserFormToken(token);
-            if (user == null) {
-                throw new IllegalArgumentException("Invalid token");
-            }
             Long userid = user.getId();
 
             Newsfeed newsfeed = new Newsfeed(userid, contentRequestDto.getContent());
@@ -117,15 +116,17 @@ public class NewsfeedService {
      * @return
      */
     @Transactional
-    public ResponseEntity<NewsfeedResponseDto> putContent(String token, Long contentId,
+    public ResponseEntity<NewsfeedResponseDto> putContent(String username, Long contentId,
         NewsfeedRequestDto contentRequestDto) {
 
         try {
-
             Newsfeed newsfeed = newsfeedRepository.findById(contentId)
                 .orElseThrow(() -> new RuntimeException("Content not found"));
 
-            User user = getUserFormToken(token);
+            User user = userRepository.findByUsername(username).orElseThrow(
+                    () -> new NotFoundUserException()
+            );
+
             // 유저가 없거나, 뉴스피드의 userid와 user의 id가 일치하지 않는다면
             if (user == null || !Objects.equals(newsfeed.getUserid(), user.getId())) {
                 throw new IllegalArgumentException("Invalid token");
@@ -147,14 +148,17 @@ public class NewsfeedService {
      * @param contentId
      * @return
      */
-    public ResponseEntity<Long> deleteContent(String token, Long contentId) {
+    public ResponseEntity<Long> deleteContent(String username, Long contentId) {
 
         try {
 
             Newsfeed newsfeed = newsfeedRepository.findById(contentId)
                 .orElseThrow(() -> new RuntimeException("Content not found"));
 
-            User user = getUserFormToken(token);
+            User user = userRepository.findByUsername(username).orElseThrow(
+                    () -> new NotFoundUserException()
+            );
+
             // 유저가 없거나, 뉴스피드의 userid와 user의 id가 일치하지 않는다면
             if (user == null || !Objects.equals(user.getId(), newsfeed.getUserid())) {
                 throw new IllegalArgumentException("Invalid token");

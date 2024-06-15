@@ -6,6 +6,8 @@ import com.sparta.oneandzerobest.comment.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,9 +33,9 @@ public class CommentController {
     @PostMapping
     public ResponseEntity<?> createComment(@PathVariable Long newsfeedId,
                                            @RequestBody CommentRequestDto requestDto,
-                                           @RequestHeader("Authorization") String token) {
+                                           @AuthenticationPrincipal User userDetails) {
         try {
-            CommentResponseDto response = commentService.addComment(newsfeedId, requestDto, token);
+            CommentResponseDto response = commentService.addComment(newsfeedId, requestDto, userDetails.getUsername());
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("댓글 내용을 입력하지 않았습니다.");
@@ -49,10 +51,9 @@ public class CommentController {
      * @return 댓글 목록 또는 에러 메시지
      */
     @GetMapping
-    public ResponseEntity<?> getAllComments(@PathVariable Long newsfeedId,
-                                            @RequestHeader("Authorization") String token) {
+    public ResponseEntity<?> getAllComments(@PathVariable Long newsfeedId) {
         try {
-            List<CommentResponseDto> responses = commentService.getAllComments(newsfeedId, token);
+            List<CommentResponseDto> responses = commentService.getAllComments(newsfeedId);
             return ResponseEntity.ok(responses);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유효하지 않은 뉴스피드 ID입니다.");
@@ -71,9 +72,9 @@ public class CommentController {
     public ResponseEntity<?> updateComment(@PathVariable Long newsfeedId,
                                            @PathVariable Long commentId,
                                            @RequestBody CommentRequestDto requestDto,
-                                           @RequestHeader("Authorization") String token) {
+                                           @AuthenticationPrincipal User userDetails) {
         try {
-            CommentResponseDto response = commentService.updateComment(newsfeedId, commentId, requestDto, token);
+            CommentResponseDto response = commentService.updateComment(newsfeedId, commentId, requestDto, userDetails.getUsername());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("유효하지 않은 댓글 ID입니다.");
@@ -90,9 +91,9 @@ public class CommentController {
     @DeleteMapping("/{commentId}")
     public ResponseEntity<?> deleteComment(@PathVariable Long newsfeedId,
                                            @PathVariable Long commentId,
-                                           @RequestHeader("Authorization") String token) {
+                                           @AuthenticationPrincipal User userDetails) {
         try {
-            commentService.deleteComment(newsfeedId, commentId, token);
+            commentService.deleteComment(newsfeedId, commentId, userDetails.getUsername());
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("유효하지 않은 댓글 ID입니다.");

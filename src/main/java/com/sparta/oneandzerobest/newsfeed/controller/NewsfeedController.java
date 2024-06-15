@@ -10,6 +10,9 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,10 +40,9 @@ public class NewsfeedController {
      */
     @PostMapping("/newsfeed")
     public ResponseEntity<NewsfeedResponseDto> postNewsfeed(
-        @RequestHeader("Authorization") String token,
+        @AuthenticationPrincipal User userDetails,
         @Valid @RequestBody NewsfeedRequestDto contentRequestDto) {
-
-        return newsfeedService.postContent(token, contentRequestDto);
+        return newsfeedService.postContent(userDetails.getUsername(), contentRequestDto);
     }
 
     /**
@@ -76,10 +78,10 @@ public class NewsfeedController {
      */
     @PutMapping("newsfeed/{id}")
     public ResponseEntity<NewsfeedResponseDto> putNewsfeed(
-        @RequestHeader("Authorization") String token, @PathVariable Long id,
+        @PathVariable Long id,
+        @AuthenticationPrincipal User userDetails,
         @Valid @RequestBody NewsfeedRequestDto contentRequestDto) {
-
-        return newsfeedService.putContent(token, id, contentRequestDto);
+        return newsfeedService.putContent(userDetails.getUsername(), id, contentRequestDto);
     }
 
     /**
@@ -90,9 +92,9 @@ public class NewsfeedController {
      * @return
      */
     @DeleteMapping("newsfeed/{id}")
-    public ResponseEntity<Long> deleteNewsfeed(@RequestHeader("Authorization") String token,
+    public ResponseEntity<Long> deleteNewsfeed(@AuthenticationPrincipal User userDetails,
         @PathVariable Long id) {
-        return newsfeedService.deleteContent(token, id);
+        return newsfeedService.deleteContent(userDetails.getUsername(), id);
     }
 
     /**

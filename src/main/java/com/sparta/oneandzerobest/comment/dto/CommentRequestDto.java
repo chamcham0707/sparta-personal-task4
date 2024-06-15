@@ -14,6 +14,8 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class CommentRequestDto {
     @NotNull(message = "뉴스피드 ID는 필수입니다.")
     private Long newsfeedId;  // 댓글이 속할 뉴스피드의 ID

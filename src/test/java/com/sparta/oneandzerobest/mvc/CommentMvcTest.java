@@ -70,9 +70,8 @@ public class CommentMvcTest {
     private void mockUserSetup() {
         String username = "testUser";
         String password = "testPassword";
-        String name = "testName";
-        String email = "test@google.com";
-        User testUser = new User(username, password, name, email, UserStatus.ACTIVE);
+        User user = new User();
+        org.springframework.security.core.userdetails.User testUser = new org.springframework.security.core.userdetails.User(username, password, user.getAuthorities());
         mockPrincipal = new UsernamePasswordAuthenticationToken(testUser, "", testUser.getAuthorities());
     }
 
@@ -83,7 +82,6 @@ public class CommentMvcTest {
         this.mockUserSetup();
 
         Long newsfeedId = 1L;
-        String token = "Bearer testToken";
         CommentRequestDto commentRequestDto = new CommentRequestDto();
         commentRequestDto.setNewsfeedId(newsfeedId);
         commentRequestDto.setContent("this is test content");
@@ -93,7 +91,6 @@ public class CommentMvcTest {
         // When - Then
         mvc.perform(post("/newsfeed/{newsfeedId}/comment", newsfeedId)
                         .content(postInfo)
-                        .header(HttpHeaders.AUTHORIZATION, token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .principal(mockPrincipal)
@@ -109,11 +106,9 @@ public class CommentMvcTest {
         this.mockUserSetup();
 
         Long newsfeedId = 1L;
-        String token = "Bearer testToken";
 
         // When - Then
         mvc.perform(get("/newsfeed/{newsfeedId}/comment", newsfeedId)
-                        .header(HttpHeaders.AUTHORIZATION, token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .principal(mockPrincipal)
@@ -133,14 +128,12 @@ public class CommentMvcTest {
         CommentRequestDto commentRequestDto = new CommentRequestDto();
         commentRequestDto.setNewsfeedId(newsfeedId);
         commentRequestDto.setContent("this is test content");
-        String token = "Bearer testToken";
 
         String postInfo = objectMapper.writeValueAsString(commentRequestDto);
 
         // When - Then
         mvc.perform(put("/newsfeed/{newsfeedId}/comment/{commentId}", newsfeedId, commentId)
                         .content(postInfo)
-                        .header(HttpHeaders.AUTHORIZATION, token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .principal(mockPrincipal)
@@ -157,11 +150,9 @@ public class CommentMvcTest {
 
         Long newsfeedId = 1L;
         Long commentId = 1L;
-        String token = "Bearer testToken";
 
         // When - Then
         mvc.perform(delete("/newsfeed/{newsfeedId}/comment/{commentId}", newsfeedId, commentId)
-                        .header(HttpHeaders.AUTHORIZATION, token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .principal(mockPrincipal)

@@ -79,9 +79,8 @@ public class NewsfeedMvcTest {
     private void mockUserSetup() {
         String username = "testUser";
         String password = "testPassword";
-        String name = "testName";
-        String email = "test@google.com";
-        User testUser = new User(username, password, name, email, UserStatus.ACTIVE);
+        User user = new User();
+        org.springframework.security.core.userdetails.User testUser = new org.springframework.security.core.userdetails.User(username, password, user.getAuthorities());
         mockPrincipal = new UsernamePasswordAuthenticationToken(testUser, "", testUser.getAuthorities());
     }
 
@@ -91,7 +90,6 @@ public class NewsfeedMvcTest {
         // Given
         this.mockUserSetup();
 
-        String token = "Bearer testToken";
         NewsfeedRequestDto newsfeedRequestDto = new NewsfeedRequestDto("this is test");
 
         String postInfo = objectMapper.writeValueAsString(newsfeedRequestDto);
@@ -99,7 +97,6 @@ public class NewsfeedMvcTest {
         // When - Then
         mvc.perform(post("/newsfeed")
                         .content(postInfo)
-                        .header(HttpHeaders.AUTHORIZATION, token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .principal(mockPrincipal)
@@ -144,7 +141,6 @@ public class NewsfeedMvcTest {
         this.mockUserSetup();
 
         Long newsfeedId = 1L;
-        String token = "Bearer testToken";
         NewsfeedRequestDto newsfeedRequestDto = new NewsfeedRequestDto("this is test");
 
         String postInfo = objectMapper.writeValueAsString(newsfeedRequestDto);
@@ -152,7 +148,6 @@ public class NewsfeedMvcTest {
         // When - Then
         mvc.perform(put("/newsfeed/{id}", newsfeedId)
                         .content(postInfo)
-                        .header(HttpHeaders.AUTHORIZATION, token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .principal(mockPrincipal)
@@ -168,11 +163,9 @@ public class NewsfeedMvcTest {
         this.mockUserSetup();
 
         Long newsfeedId = 1L;
-        String token = "Bearer testToken";
 
         // When - Then
         mvc.perform(delete("/newsfeed/{id}", newsfeedId)
-                        .header(HttpHeaders.AUTHORIZATION, token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .principal(mockPrincipal)

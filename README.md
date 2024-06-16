@@ -53,3 +53,7 @@
 | **채민**|	프로필 관련 기능 구현|
 | **기석**|	댓글, 스웨거 관련 기능 구현|
 
+
+## Jacoco로 보는 코드 커버리지
+![image](https://github.com/chamcham0707/sparta-personal-task4/assets/94772043/f90fadd5-9349-48b3-95ab-fb8917338780)
+

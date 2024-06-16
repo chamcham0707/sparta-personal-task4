@@ -1,6 +1,8 @@
 package com.sparta.oneandzerobest.mvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.navercorp.fixturemonkey.FixtureMonkey;
+import com.navercorp.fixturemonkey.api.introspector.ConstructorPropertiesArbitraryIntrospector;
 import com.sparta.oneandzerobest.auth.config.SecurityConfig;
 import com.sparta.oneandzerobest.auth.entity.User;
 import com.sparta.oneandzerobest.auth.entity.UserStatus;
@@ -8,6 +10,7 @@ import com.sparta.oneandzerobest.auth.service.UserDetailsServiceImpl;
 import com.sparta.oneandzerobest.auth.util.JwtUtil;
 import com.sparta.oneandzerobest.comment.controller.CommentController;
 import com.sparta.oneandzerobest.comment.dto.CommentRequestDto;
+import com.sparta.oneandzerobest.comment.entity.Comment;
 import com.sparta.oneandzerobest.comment.service.CommentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -60,18 +63,30 @@ public class CommentMvcTest {
     @MockBean
     private CommentService commentService;
 
+    FixtureMonkey fixtureMonkey;
+
+    CommentRequestDto commentRequestDto;
+
     @BeforeEach
-    public void setup() {
+    void setUp() {
         mvc = MockMvcBuilders.webAppContextSetup(context)
                 .apply(springSecurity(new MockSpringSecurityFilter()))
                 .build();
+
+        fixtureMonkey = FixtureMonkey.builder()
+                .defaultNotNull(Boolean.TRUE)
+                .objectIntrospector(ConstructorPropertiesArbitraryIntrospector.INSTANCE)
+                .build();
+
+        commentRequestDto = fixtureMonkey.giveMeOne(CommentRequestDto.class);
     }
 
     private void mockUserSetup() {
-        String username = "testUser";
-        String password = "testPassword";
-        User user = new User();
-        org.springframework.security.core.userdetails.User testUser = new org.springframework.security.core.userdetails.User(username, password, user.getAuthorities());
+        User user = fixtureMonkey.giveMeBuilder(User.class)
+                .set("username", "testUsername")
+                .set("password", "testPassword!")
+                .sample();
+        org.springframework.security.core.userdetails.User testUser = new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), user.getAuthorities());
         mockPrincipal = new UsernamePasswordAuthenticationToken(testUser, "", testUser.getAuthorities());
     }
 
@@ -81,15 +96,10 @@ public class CommentMvcTest {
         // Given
         this.mockUserSetup();
 
-        Long newsfeedId = 1L;
-        CommentRequestDto commentRequestDto = new CommentRequestDto();
-        commentRequestDto.setNewsfeedId(newsfeedId);
-        commentRequestDto.setContent("this is test content");
-
         String postInfo = objectMapper.writeValueAsString(commentRequestDto);
 
         // When - Then
-        mvc.perform(post("/newsfeed/{newsfeedId}/comment", newsfeedId)
+        mvc.perform(post("/newsfeed/{newsfeedId}/comment", commentRequestDto.getNewsfeedId())
                         .content(postInfo)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
@@ -123,16 +133,10 @@ public class CommentMvcTest {
         // Given
         this.mockUserSetup();
 
-        Long newsfeedId = 1L;
-        Long commentId = 1L;
-        CommentRequestDto commentRequestDto = new CommentRequestDto();
-        commentRequestDto.setNewsfeedId(newsfeedId);
-        commentRequestDto.setContent("this is test content");
-
         String postInfo = objectMapper.writeValueAsString(commentRequestDto);
 
         // When - Then
-        mvc.perform(put("/newsfeed/{newsfeedId}/comment/{commentId}", newsfeedId, commentId)
+        mvc.perform(put("/newsfeed/{newsfeedId}/comment/{commentId}", commentRequestDto.getNewsfeedId(), 1L)
                         .content(postInfo)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)

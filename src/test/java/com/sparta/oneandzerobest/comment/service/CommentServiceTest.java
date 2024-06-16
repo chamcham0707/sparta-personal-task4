@@ -1,20 +1,21 @@
 package com.sparta.oneandzerobest.comment.service;
 
+import com.navercorp.fixturemonkey.FixtureMonkey;
+import com.navercorp.fixturemonkey.api.introspector.ConstructorPropertiesArbitraryIntrospector;
 import com.sparta.oneandzerobest.auth.entity.User;
-import com.sparta.oneandzerobest.auth.entity.UserStatus;
 import com.sparta.oneandzerobest.auth.repository.UserRepository;
 import com.sparta.oneandzerobest.auth.util.JwtUtil;
 import com.sparta.oneandzerobest.comment.dto.CommentRequestDto;
 import com.sparta.oneandzerobest.comment.dto.CommentResponseDto;
 import com.sparta.oneandzerobest.comment.entity.Comment;
 import com.sparta.oneandzerobest.comment.repository.CommentRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -37,27 +38,42 @@ class CommentServiceTest {
 
     @MockBean
     private JwtUtil jwtUtil;
+    FixtureMonkey fixtureMonkey;
+    CommentRequestDto commentRequestDto;
+
+    User user;
+
+    Comment comment;
+
+    @BeforeEach
+    void setUp() {
+        fixtureMonkey = FixtureMonkey.builder()
+                .defaultNotNull(Boolean.TRUE)
+                .objectIntrospector(ConstructorPropertiesArbitraryIntrospector.INSTANCE)
+                .build();
+
+        commentRequestDto = fixtureMonkey.giveMeOne(CommentRequestDto.class);
+        user = fixtureMonkey.giveMeOne(User.class);
+        comment = fixtureMonkey.giveMeBuilder(Comment.class)
+                .set("userId", user.getId())
+                .set("content", commentRequestDto.getContent())
+                .sample();
+    }
 
     @Test
     @DisplayName("댓글 등록 테스트")
     void test1() {
         // Given
-        Long newsfeedId = 1L;
-        CommentRequestDto commentRequestDto = new CommentRequestDto(newsfeedId, "this is test comment");
-        String username = "testUsername";
-        User user = new User(1L, username, "testPassword!", "testName", "test@example.com", "test!", UserStatus.ACTIVE, "testRefreshToken", LocalDateTime.now(), LocalDateTime.now(), null);
-        Comment comment = new Comment(1L, newsfeedId, user.getId(), commentRequestDto.getContent());
-
-        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+        when(userRepository.findByUsername(user.getUsername())).thenReturn(Optional.of(user));
         when(commentRepository.save(any(Comment.class))).thenReturn(comment);
 
         // When
-        CommentResponseDto commentResponseDto = commentService.addComment(newsfeedId, commentRequestDto, username);
+        CommentResponseDto commentResponseDto = commentService.addComment(comment.getNewsfeedId(), commentRequestDto, user.getUsername());
 
         // Then
         assertEquals(comment.getContent(), commentResponseDto.getContent());
 
-        verify(userRepository, times(1)).findByUsername(username);
+        verify(userRepository, times(1)).findByUsername(user.getUsername());
         verify(commentRepository, times(1)).save(any(Comment.class));
     }
 
@@ -90,24 +106,18 @@ class CommentServiceTest {
     @DisplayName("댓글 수정 테스트")
     void test3() {
         // Given
-        Long newsfeedId = 1L;
-        Long commentId = 1L;
-        CommentRequestDto commentRequestDto = new CommentRequestDto(newsfeedId, "comment1");
-        User user = new User(1L, "testUsername", "testPassword!", "testName", "test@example.com", "test1111", UserStatus.ACTIVE, "testRefreshToken", LocalDateTime.now(), LocalDateTime.now(), null);
-        Comment comment = new Comment(commentId, newsfeedId, user.getId(), commentRequestDto.getContent());
-
         when(userRepository.findByUsername(user.getUsername())).thenReturn(Optional.of(user));
-        when(commentRepository.findByIdAndNewsfeedIdAndUserId(commentId, newsfeedId, user.getId())).thenReturn(Optional.of(comment));
+        when(commentRepository.findByIdAndNewsfeedIdAndUserId(comment.getId(), comment.getNewsfeedId(), user.getId())).thenReturn(Optional.of(comment));
         when(commentRepository.save(comment)).thenReturn(comment);
 
         // When
-        CommentResponseDto commentResponseDto = commentService.updateComment(newsfeedId, commentId, commentRequestDto, user.getUsername());
+        CommentResponseDto commentResponseDto = commentService.updateComment(comment.getNewsfeedId(), comment.getId(), commentRequestDto, user.getUsername());
 
         // Then
         assertEquals(comment.getContent(), commentResponseDto.getContent());
 
         verify(userRepository, times(1)).findByUsername(user.getUsername());
-        verify(commentRepository, times(1)).findByIdAndNewsfeedIdAndUserId(commentId, newsfeedId, user.getId());
+        verify(commentRepository, times(1)).findByIdAndNewsfeedIdAndUserId(comment.getId(), comment.getNewsfeedId(), user.getId());
         verify(commentRepository, times(1)).save(comment);
     }
 
@@ -115,20 +125,15 @@ class CommentServiceTest {
     @DisplayName("댓글 삭제 테스트")
     void test4() {
         // Given
-        Long newsfeedId = 1L;
-        Long commentId = 1L;
-        User user = new User(1L, "testUsername", "testPassword!", "testName", "test@example.com", "test1111", UserStatus.ACTIVE, "testRefreshToken", LocalDateTime.now(), LocalDateTime.now(), null);
-        Comment comment = new Comment(1L, newsfeedId, user.getId(), "comment1");
-
         when(userRepository.findByUsername(user.getUsername())).thenReturn(Optional.of(user));
-        when(commentRepository.findByIdAndNewsfeedIdAndUserId(commentId, newsfeedId, user.getId())).thenReturn(Optional.of(comment));
+        when(commentRepository.findByIdAndNewsfeedIdAndUserId(comment.getId(), comment.getNewsfeedId(), user.getId())).thenReturn(Optional.of(comment));
 
         // When
-        commentService.deleteComment(newsfeedId, commentId, user.getUsername());
+        commentService.deleteComment(comment.getNewsfeedId(), comment.getId(), user.getUsername());
 
         // Then
         verify(userRepository, times(1)).findByUsername(user.getUsername());
-        verify(commentRepository, times(1)).findByIdAndNewsfeedIdAndUserId(commentId, newsfeedId, user.getId());
+        verify(commentRepository, times(1)).findByIdAndNewsfeedIdAndUserId(comment.getId(), comment.getNewsfeedId(), user.getId());
         verify(commentRepository, times(1)).delete(comment);
     }
 }

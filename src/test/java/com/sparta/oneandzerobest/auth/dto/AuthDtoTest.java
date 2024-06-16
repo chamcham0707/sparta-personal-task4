@@ -1,5 +1,9 @@
 package com.sparta.oneandzerobest.auth.dto;
 
+import com.navercorp.fixturemonkey.FixtureMonkey;
+import com.navercorp.fixturemonkey.api.introspector.ConstructorPropertiesArbitraryIntrospector;
+import com.sparta.oneandzerobest.auth.entity.User;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -9,20 +13,25 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class AuthDtoTest {
+
+    FixtureMonkey fixtureMonkey;
+
+    @BeforeEach
+    void setUp() {
+        fixtureMonkey = FixtureMonkey.builder()
+                .defaultNotNull(Boolean.TRUE)
+                .objectIntrospector(ConstructorPropertiesArbitraryIntrospector.INSTANCE)
+                .build();
+    }
+
     @Test
     @DisplayName("RefreshTokenDTO 테스트")
     void test1() {
         // Given
         String testToken = "test_refresh_token";
-        RefreshTokenRequestDto refreshTokenRequestDto = new RefreshTokenRequestDto();
-
-        try {
-            Field field = RefreshTokenRequestDto.class.getDeclaredField("refreshToken");
-            field.setAccessible(true);
-            field.set(refreshTokenRequestDto, testToken);
-        } catch (Exception e) {
-            fail("test fail - error message: " + e.getMessage());
-        }
+        RefreshTokenRequestDto refreshTokenRequestDto = fixtureMonkey.giveMeBuilder(RefreshTokenRequestDto.class)
+                .set("refreshToken", testToken)
+                .sample();
 
         // When
         String refreshToken = refreshTokenRequestDto.getRefreshToken();
@@ -38,9 +47,14 @@ public class AuthDtoTest {
         String testUsername = "username1";
         String testPassword = "password1";
         String testName = "name1";
-        String testEmail = "email1";
+        String testEmail = "test@example.com";
 
-        SignupRequestDto signupRequestDto = new SignupRequestDto(testUsername, testPassword, testName, testEmail);
+        SignupRequestDto signupRequestDto = fixtureMonkey.giveMeBuilder(SignupRequestDto.class)
+                .set("username", testUsername)
+                .set("password", testPassword)
+                .set("name", testName)
+                .set("email", testEmail)
+                .sample();
 
         // When - Then
         assertEquals(signupRequestDto.getUsername(), testUsername);
@@ -56,7 +70,10 @@ public class AuthDtoTest {
         String testAccessToken = "test_access_token";
         String testRefreshToken = "test_refresh_token";
 
-        TokenResponseDto tokenResponseDto = new TokenResponseDto(testAccessToken, testRefreshToken);
+        TokenResponseDto tokenResponseDto = fixtureMonkey.giveMeBuilder(TokenResponseDto.class)
+                .set("accessToken", testAccessToken)
+                .set("refreshToken", testRefreshToken)
+                .sample();
 
         // When - Then
         assertEquals(tokenResponseDto.getAccessToken(), testAccessToken);

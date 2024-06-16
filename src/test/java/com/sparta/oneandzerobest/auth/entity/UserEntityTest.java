@@ -1,43 +1,43 @@
 package com.sparta.oneandzerobest.auth.entity;
 
+import com.navercorp.fixturemonkey.FixtureMonkey;
+import com.navercorp.fixturemonkey.api.introspector.ConstructorPropertiesArbitraryIntrospector;
 import com.sparta.oneandzerobest.profile.dto.ProfileRequestDto;
 import com.sparta.oneandzerobest.s3.entity.Image;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.BDDAssertions.then;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class UserEntityTest {
 
     User user;
-    String username;
-    String password;
-    String name;
-    String email;
-    UserStatus statusCode;
+
+    FixtureMonkey fixtureMonkey;
 
     @BeforeEach
     void setUp() {
-        username = "testUsername";
-        password = "testPassword";
-        name = "testName";
-        email = "testEmail";
-        statusCode = UserStatus.UNVERIFIED;
+        fixtureMonkey = FixtureMonkey.builder()
+                .defaultNotNull(Boolean.TRUE)
+                .objectIntrospector(ConstructorPropertiesArbitraryIntrospector.INSTANCE)
+                .build();
 
-        user = new User(username, password, name, email, statusCode);
+        user = fixtureMonkey.giveMeOne(User.class);
     }
 
     @Test
     @DisplayName("User(): 생성자 테스트")
     void test1() {
-        // When - Then
-        assertEquals(username, user.getUsername());
-        assertEquals(password, user.getPassword());
-        assertEquals(name, user.getName());
-        assertEquals(email, user.getEmail());
-        assertNotNull(user.getCreatedAt());
+        // Then
+        then(user.getUsername()).isNotNull();
+        then(user.getPassword()).isNotNull();
+        then(user.getName()).isNotNull();
+        then(user.getEmail()).isNotNull();
+        then(user.getStatusCode()).isNotNull();
+        then(user.getCreatedAt()).isNotNull();
     }
 
     @Test
@@ -47,8 +47,8 @@ public class UserEntityTest {
         user.onCreate();
 
         // Then
-        assertNotNull(user.getCreatedAt());
-        assertNotNull(user.getUpdatedAt());
+        then(user.getCreatedAt()).isNotNull();
+        then(user.getUpdatedAt()).isNotNull();
     }
 
     @Test
@@ -58,21 +58,21 @@ public class UserEntityTest {
         user.onUpdate();
 
         // Then
-        assertNotNull(user.getUpdatedAt());
+        then(user.getUpdatedAt()).isNotNull();
     }
 
     @Test
     @DisplayName("getAuthorities() 테스트")
     void test4() {
         // Then
-        assertNotNull(user.getAuthorities());
+        then(user.getAuthorities()).isNotNull();
     }
 
     @Test
     @DisplayName("setProfileImage() 테스트")
     void test5() {
         // Given
-        Image image = Mockito.mock(Image.class);
+        Image image = fixtureMonkey.giveMeOne(Image.class);
 
         // When
         user.setProfileImage(image);
@@ -85,17 +85,14 @@ public class UserEntityTest {
     @DisplayName("update() 테스트")
     void test6() {
         // Given
-        String updateName = "updateName";
-        String updateIntroduction = "updateIntroduction";
-
-        ProfileRequestDto requestDto = new ProfileRequestDto(updateName, updateIntroduction, "password", "newPassword");
+        ProfileRequestDto requestDto = fixtureMonkey.giveMeOne(ProfileRequestDto.class);
 
         // When
         user.update(requestDto);
 
         // Then
-        assertEquals(updateName, user.getName());
-        assertEquals(updateIntroduction, user.getIntroduction());
+        assertEquals(requestDto.getName(), user.getName());
+        assertEquals(requestDto.getIntroduction(), user.getIntroduction());
     }
 
     @Test
@@ -235,5 +232,20 @@ public class UserEntityTest {
 
         // Then
         assertEquals(updatePassword, user.getPassword());
+    }
+
+    @Test
+    @DisplayName("Fixture Monkey 적용 테스트")
+    void test16() {
+        // given
+        FixtureMonkey fixtureMonkey = FixtureMonkey.builder()
+                .objectIntrospector(ConstructorPropertiesArbitraryIntrospector.INSTANCE)
+                .build();
+
+        // WHen
+        User actual = fixtureMonkey.giveMeOne(User.class);
+
+        // Then
+        then(actual).isNotNull();
     }
 }

@@ -3,7 +3,10 @@ package com.sparta.oneandzerobest.auth.entity;
 import com.sparta.oneandzerobest.profile.dto.ProfileRequestDto;
 import com.sparta.oneandzerobest.s3.entity.Image;
 import jakarta.persistence.*;
-import lombok.*;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -21,6 +24,7 @@ public class User implements UserDetails { // Spring Security의 UserDetails
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull
     @Column(nullable = false, unique = true)
     private String username;
 

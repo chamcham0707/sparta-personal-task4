@@ -64,6 +64,9 @@ repositories {
 }
 
 dependencies {
+    // Fixture Monkey
+    testImplementation 'com.navercorp.fixturemonkey:fixture-monkey-starter:0.5.0'
+
     // Mockito
     testImplementation 'org.mockito:mockito-core:4.8.0'
 

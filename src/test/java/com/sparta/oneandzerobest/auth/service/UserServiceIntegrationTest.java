@@ -1,5 +1,7 @@
 package com.sparta.oneandzerobest.auth.service;
 
+import com.navercorp.fixturemonkey.FixtureMonkey;
+import com.navercorp.fixturemonkey.api.introspector.ConstructorPropertiesArbitraryIntrospector;
 import com.sparta.oneandzerobest.auth.entity.*;
 import com.sparta.oneandzerobest.auth.repository.UserRepository;
 import org.junit.jupiter.api.*;
@@ -38,10 +40,22 @@ class UserServiceIntegrationTest {
     private PasswordEncoder passwordEncoder;
 
     User user;
+    FixtureMonkey fixtureMonkey;
 
     @BeforeEach
     void setUp() {
-        user = new User(username, encodePassword, "testName", email, UserStatus.UNVERIFIED);
+        fixtureMonkey = FixtureMonkey.builder()
+                .defaultNotNull(Boolean.TRUE)
+                .objectIntrospector(ConstructorPropertiesArbitraryIntrospector.INSTANCE)
+                .build();
+
+        user = fixtureMonkey.giveMeBuilder(User.class)
+                .set("username", username)
+                .set("password", encodePassword)
+                .set("name", "testName")
+                .set("email", email)
+                .set("statusCode", UserStatus.UNVERIFIED)
+                .sample();
     }
 
     @Test

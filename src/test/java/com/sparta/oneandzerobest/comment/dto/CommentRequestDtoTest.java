@@ -1,5 +1,9 @@
 package com.sparta.oneandzerobest.comment.dto;
 
+import com.navercorp.fixturemonkey.FixtureMonkey;
+import com.navercorp.fixturemonkey.api.introspector.ConstructorPropertiesArbitraryIntrospector;
+import com.sparta.oneandzerobest.auth.entity.User;
+import com.sparta.oneandzerobest.auth.entity.UserStatus;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -16,20 +20,26 @@ class CommentRequestDtoTest {
     private Validator validator;
 
     CommentRequestDto commentRequestDto;
+    FixtureMonkey fixtureMonkey;
 
     @BeforeEach
     void setUp() {
         validator = Validation.buildDefaultValidatorFactory().getValidator();
-        commentRequestDto = new CommentRequestDto();
+
+        fixtureMonkey = FixtureMonkey.builder()
+                .defaultNotNull(Boolean.TRUE)
+                .objectIntrospector(ConstructorPropertiesArbitraryIntrospector.INSTANCE)
+                .build();
+
+        commentRequestDto = fixtureMonkey.giveMeBuilder(CommentRequestDto.class)
+                .set("newsfeedId", 1L)
+                .set("content", "this is test")
+                .sample();
     }
 
     @Test
     @DisplayName("CommentRequestDto 성공 테스트")
     void test1() {
-        // Given
-        commentRequestDto.setNewsfeedId(1L);
-        commentRequestDto.setContent("test comment");
-
         // When
         Set<ConstraintViolation<CommentRequestDto>> violations = validator.validate(commentRequestDto);
 
@@ -42,8 +52,7 @@ class CommentRequestDtoTest {
     @DisplayName("CommentRequestDto 뉴스피드 Id Null 예외 테스트")
     void test2() {
         // Given
-        commentRequestDto.setContent("newsfeedId null test");
-
+        commentRequestDto.setNewsfeedId(null);
         // When
         Set<ConstraintViolation<CommentRequestDto>> violations = validator.validate(commentRequestDto);
 
@@ -55,7 +64,6 @@ class CommentRequestDtoTest {
     @DisplayName("CommentRequestDto 댓글 공백 예외 테스트")
     void test3() {
         // Given
-        commentRequestDto.setNewsfeedId(1L);
         commentRequestDto.setContent("");
 
         // When
@@ -69,7 +77,6 @@ class CommentRequestDtoTest {
     @DisplayName("CommentRequestDto 댓글 최대 글자 예외 테스트")
     void test4() {
         // Given
-        commentRequestDto.setNewsfeedId(1L);
         commentRequestDto.setContent("kldsfjdaslkfjdslkfjdsalfkjadsl;kfjads;lkfjads;lfkjad;lskfjadslkfjadslkfjads;lkfjads;lkfjsad;lkfjas;dlkfja;dslkfjsad;lkfjads;lkfjads;lkfjasdl;kfjas;dlkfjdsa;lkfjasdlkfjads;lkfjdsalkfjdslkfjcxmvn.,czxmvn,z.xmcvnmcxznvz.x,mcvnzx.c,mvnzx.c,mvnz.xc,mvnz,.cxmvnz.,");
 
         // When

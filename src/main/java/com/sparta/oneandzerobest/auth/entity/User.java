@@ -28,18 +28,22 @@ public class User implements UserDetails { // Spring Security의 UserDetails
     @Column(nullable = false, unique = true)
     private String username;
 
+    @NotNull
     @Column(nullable = false)
     private String password;
 
+    @NotNull
     @Column(nullable = false)
     private String name;
 
+    @NotNull
     @Column(nullable = false, unique = true)
     private String email;
 
     @Column
     private String introduction;
 
+    @NotNull
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private UserStatus statusCode;
@@ -47,6 +51,7 @@ public class User implements UserDetails { // Spring Security의 UserDetails
     @Column
     private String refreshToken;
 
+    @NotNull
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

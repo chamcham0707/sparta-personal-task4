@@ -30,9 +30,6 @@ public class CommentService {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private JwtUtil jwtUtil;
-
     /**
      * 뉴스피드에 댓글을 추가
      * @param newsfeedId 뉴스피드 ID
@@ -99,17 +96,5 @@ public class CommentService {
         Comment comment = commentRepository.findByIdAndNewsfeedIdAndUserId(commentId, newsfeedId, user.getId())
                 .orElseThrow(() -> new CommentNotFoundException("해당 댓글이 존재하지 않거나 권한이 없습니다."));
         commentRepository.delete(comment);
-    }
-
-    /**
-     * 토큰을 검증하고 사용자 ID를 반환하는 메소드
-     * @param token JWT 토큰
-     * @return 사용자 ID
-     */
-    private Long validateToken(String token) {
-        String username = jwtUtil.getUsernameFromToken(token.replace("Bearer ", ""));
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UnauthorizedException("인증 정보가 유효하지 않습니다."));
-        return user.getId();
     }
 }
